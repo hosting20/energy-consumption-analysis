@@ -44,3 +44,16 @@ This project analyzes household electricity consumption data and provides an int
 ---
 
 ## 📂 Project Structure
+
+app.py → Streamlit dashboard
+analysis.ipynb → Full data analysis
+requirements.txt → Dependencies
+
+
+---
+
+## 🚀 How to Run Locally
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
