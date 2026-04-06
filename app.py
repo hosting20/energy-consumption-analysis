@@ -1,9 +1,12 @@
+# app.py
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# --- عنوان التطبيق ---
 st.title("⚡ Energy Consumption Dashboard")
 
+# --- دالة تحميل البيانات مع cache لتسريع الأداء ---
 @st.cache_data
 def load_data():
     # اقرأ الملف الصغير
@@ -28,27 +31,35 @@ def load_data():
     
     return df
 
+# --- تحميل البيانات ---
 df = load_data()
 
+# --- التحقق أن البيانات موجودة ---
 if not df.empty:
-    # Sidebar Filters
+    # --- Sidebar Filters ---
     st.sidebar.header("Filters")
     date_range = st.sidebar.date_input(
         "Select Date Range",
         [df.index.min().date(), df.index.max().date()]
     )
-    filtered_df = df.loc[str(date_range[0]):str(date_range[1])]
 
-    # Line Chart
+    # تحويل التاريخ إلى datetime كامل لتجنب KeyError
+    start_date = pd.to_datetime(date_range[0])
+    end_date = pd.to_datetime(date_range[1]) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
+
+    # فلترة البيانات
+    filtered_df = df.loc[start_date:end_date]
+
+    # --- Line Chart: الاستهلاك على مر الزمن ---
     st.subheader("📈 Energy Consumption Over Time")
     st.line_chart(filtered_df['Global_active_power'])
 
-    # Daily Average
+    # --- Daily Average Consumption ---
     st.subheader("📊 Daily Average Consumption")
     daily = filtered_df.resample('D').mean()
     st.line_chart(daily['Global_active_power'])
 
-    # Hourly Peak
+    # --- Hourly Analysis: ساعات الذروة ---
     st.subheader("🔥 Peak Hours Analysis")
     filtered_df['hour'] = filtered_df.index.hour
     hourly_avg = filtered_df.groupby('hour')['Global_active_power'].mean()
@@ -59,10 +70,11 @@ if not df.empty:
     ax.set_ylabel("Power (kW)")
     st.pyplot(fig)
 
-    # Key Stats
+    # --- Key Statistics ---
     st.subheader("📌 Key Statistics")
     st.write("Average Consumption:", filtered_df['Global_active_power'].mean())
     st.write("Max Consumption:", filtered_df['Global_active_power'].max())
     st.write("Min Consumption:", filtered_df['Global_active_power'].min())
+
 else:
     st.warning("البيانات غير موجودة أو لم يتم تحميلها بنجاح.")
