@@ -30,8 +30,6 @@ def load_data():
     return df
 
 df = load_data()
-    st.write("أقدم تاريخ في البيانات:", df.index.min())
-st.write("أحدث تاريخ في البيانات:", df.index.max())
 if not df.empty:
     st.sidebar.header("Filters")
     
