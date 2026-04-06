@@ -7,8 +7,7 @@ st.title("⚡ Energy Consumption Dashboard")
 @st.cache_data
 def load_data():
     df = pd.read_csv("energy_sample.csv")
-    st.write("أقدم تاريخ في البيانات:", df.index.min())
-st.write("أحدث تاريخ في البيانات:", df.index.max())
+
     
     # إنشاء datetime إذا لم يكن موجود
     if 'datetime' not in df.columns:
@@ -31,7 +30,8 @@ st.write("أحدث تاريخ في البيانات:", df.index.max())
     return df
 
 df = load_data()
-
+    st.write("أقدم تاريخ في البيانات:", df.index.min())
+st.write("أحدث تاريخ في البيانات:", df.index.max())
 if not df.empty:
     st.sidebar.header("Filters")
     
