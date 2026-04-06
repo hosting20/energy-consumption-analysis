@@ -43,7 +43,7 @@ if not df.empty:
     start_date = pd.to_datetime(date_range[0])
     end_date = pd.to_datetime(date_range[1]) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
     
-    # --- فلترة آمنة باستخدام try-except ---
+    # --- فلترة آمنة ---
     try:
         filtered_df = df.loc[start_date:end_date]
         if filtered_df.empty:
