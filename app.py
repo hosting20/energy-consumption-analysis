@@ -19,12 +19,13 @@ def load_data():
     # تحويل الطاقة إلى رقمي
     df['Global_active_power'] = pd.to_numeric(df['Global_active_power'], errors='coerce')
     
-    # حذف أي قيم مفقودة
+    # حذف أي قيم مفقودة في datetime أو الطاقة
+    df['datetime'] = pd.to_datetime(df['datetime'], errors='coerce')
     df = df.dropna(subset=['datetime', 'Global_active_power'])
     
-    # تأكد أن الفهرس DatetimeIndex
+    # التأكد من فهرس datetimeIndex مرتب
     df = df.set_index('datetime')
-    df.index = pd.to_datetime(df.index)
+    df = df.sort_index()
     
     return df
 
@@ -42,13 +43,14 @@ if not df.empty:
         [df.index.min().date(), df.index.max().date()]
     )
 
-    # ضبط التواريخ لتكون ضمن نطاق البيانات
-    start_date = max(pd.to_datetime(date_range[0]), df.index.min())
-    end_date = min(pd.to_datetime(date_range[1]), df.index.max())
+    # تحويل Sidebar إلى datetime
+    start_date = pd.to_datetime(date_range[0])
+    end_date = pd.to_datetime(date_range[1]) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
 
-    filtered_df = df.loc[start_date:end_date]
+    # فلترة آمنة باستخدام Boolean mask
+    mask = (df.index >= start_date) & (df.index <= end_date)
+    filtered_df = df.loc[mask]
 
-    # إذا لم توجد بيانات في النطاق المختار، عرض كامل البيانات
     if filtered_df.empty:
         st.warning("لا توجد بيانات ضمن النطاق المختار! سيتم عرض كامل البيانات.")
         filtered_df = df.copy()
