@@ -1,1 +1,61 @@
-{"nbformat":4,"nbformat_minor":0,"metadata":{"colab":{"provenance":[],"authorship_tag":"ABX9TyNdtvWFZC0l3MC3JQvY1sJJ"},"kernelspec":{"name":"python3","display_name":"Python 3"},"language_info":{"name":"python"}},"cells":[{"cell_type":"code","execution_count":null,"metadata":{"id":"TWKUk6O3opKQ"},"outputs":[],"source":["import streamlit as st\n","import pandas as pd\n","import matplotlib.pyplot as plt\n","\n","# Title\n","st.title(\"⚡ Energy Consumption Dashboard\")\n","\n","# Load Data\n","@st.cache_data\n","def load_data():\n","    url = \"https://archive.ics.uci.edu/ml/machine-learning-databases/00235/household_power_consumption.txt\"\n","    df = pd.read_csv(url, sep=';', low_memory=False)\n","\n","    df = df.sample(50000, random_state=42)\n","\n","    df['datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'], errors='coerce')\n","    df['Global_active_power'] = pd.to_numeric(df['Global_active_power'], errors='coerce')\n","\n","    df = df.dropna(subset=['datetime', 'Global_active_power'])\n","    df.set_index('datetime', inplace=True)\n","\n","    return df\n","\n","df = load_data()\n","\n","# Sidebar Filters\n","st.sidebar.header(\"Filters\")\n","\n","date_range = st.sidebar.date_input(\n","    \"Select Date Range\",\n","    [df.index.min(), df.index.max()]\n",")\n","\n","# Filter Data\n","filtered_df = df.loc[str(date_range[0]):str(date_range[1])]\n","\n","# Line Chart\n","st.subheader(\"📈 Energy Consumption Over Time\")\n","st.line_chart(filtered_df['Global_active_power'])\n","\n","# Daily Consumption\n","st.subheader(\"📊 Daily Average Consumption\")\n","daily = filtered_df.resample('D').mean()\n","st.line_chart(daily['Global_active_power'])\n","\n","# Hourly Analysis\n","st.subheader(\"🔥 Peak Hours Analysis\")\n","\n","filtered_df['hour'] = filtered_df.index.hour\n","hourly_avg = filtered_df.groupby('hour')['Global_active_power'].mean()\n","\n","fig, ax = plt.subplots()\n","ax.plot(hourly_avg.index, hourly_avg.values)\n","ax.set_title(\"Consumption by Hour\")\n","ax.set_xlabel(\"Hour\")\n","ax.set_ylabel(\"Power\")\n","\n","st.pyplot(fig)\n","\n","# Stats\n","st.subheader(\"📌 Key Statistics\")\n","\n","st.write(\"Average Consumption:\", filtered_df['Global_active_power'].mean())\n","st.write(\"Max Consumption:\", filtered_df['Global_active_power'].max())\n","st.write(\"Min Consumption:\", filtered_df['Global_active_power'].min())"]}]}
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+
+st.set_page_config(page_title="Energy Dashboard", layout="wide")
+
+st.title("⚡ Energy Consumption Dashboard")
+
+@st.cache_data
+def load_data():
+    url = "https://archive.ics.uci.edu/ml/machine-learning-databases/00235/household_power_consumption.txt"
+    df = pd.read_csv(url, sep=';', low_memory=False)
+
+    df = df.sample(20000, random_state=42)
+
+    df['datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'], errors='coerce')
+    df['Global_active_power'] = pd.to_numeric(df['Global_active_power'], errors='coerce')
+
+    df = df.dropna(subset=['datetime', 'Global_active_power'])
+    df.set_index('datetime', inplace=True)
+
+    return df
+
+df = load_data()
+
+# Sidebar
+st.sidebar.header("📅 Filter")
+
+date_range = st.sidebar.date_input(
+    "Select Date Range",
+    [df.index.min(), df.index.max()]
+)
+
+filtered_df = df.loc[str(date_range[0]):str(date_range[1])]
+
+# Charts
+st.subheader("📈 Energy Consumption")
+st.line_chart(filtered_df['Global_active_power'])
+
+st.subheader("📊 Daily Consumption")
+daily = filtered_df.resample('D').mean()
+st.line_chart(daily['Global_active_power'])
+
+st.subheader("🔥 Peak Hours")
+
+filtered_df['hour'] = filtered_df.index.hour
+hourly = filtered_df.groupby('hour')['Global_active_power'].mean()
+
+fig, ax = plt.subplots()
+ax.plot(hourly.index, hourly.values)
+
+st.pyplot(fig)
+
+# Metrics
+st.subheader("📌 Key Metrics")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("Average", round(filtered_df['Global_active_power'].mean(), 2))
+col2.metric("Max", round(filtered_df['Global_active_power'].max(), 2))
+col3.metric("Min", round(filtered_df['Global_active_power'].min(), 2))
