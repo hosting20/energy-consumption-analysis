@@ -59,21 +59,16 @@ if not df.empty:
     st.subheader("📈 Energy Consumption Over Time")
     st.line_chart(filtered_df['Global_active_power'])
 
-    # Daily Average
-    st.subheader("📊 Daily Average Consumption")
-    daily = filtered_df.resample('D').mean()
-    st.line_chart(daily['Global_active_power'])
+# Daily Average
+st.subheader("📊 Daily Average Consumption")
+numeric_df = filtered_df.select_dtypes(include='number')
+daily = numeric_df.resample('D').mean()
+st.line_chart(daily['Global_active_power'])
 
-    # Hourly Peak
-    st.subheader("🔥 Peak Hours Analysis")
-    filtered_df['hour'] = filtered_df.index.hour
-    hourly_avg = filtered_df.groupby('hour')['Global_active_power'].mean()
-    fig, ax = plt.subplots()
-    ax.plot(hourly_avg.index, hourly_avg.values, marker='o')
-    ax.set_title("Consumption by Hour")
-    ax.set_xlabel("Hour")
-    ax.set_ylabel("Power (kW)")
-    st.pyplot(fig)
+# Hourly Peak
+st.subheader("🔥 Peak Hours Analysis")
+filtered_df['hour'] = filtered_df.index.hour
+hourly_avg = filtered_df.groupby('hour')['Global_active_power'].mean()
 
     # Key Stats
     st.subheader("📌 Key Statistics")
